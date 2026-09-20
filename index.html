@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INEFFA - Meshtastic 機器人</title>
+
+    <meta name="description" content="INEFFA - Meshtastic 機器人">
+    <meta name="author" content="HSS / INEFFA Team">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-page: #0a0814;
+            --bg-card: #120e24;
+            --bg-elevated: #1a1433;
+            --bg-terminal: #07050e;
+
+            --border-dim: #261e47;
+            --border-bright: #6d44ba;
+            --border-focus: #a855f7;
+
+            --purple-light: #ffffff;
+            --purple-main: #c084fc;
+            --purple-accent: #9333ea;
+            --purple-glow: rgba(168, 85, 247, 0.2);
+
+            --text-title: #ffffff;
+            --text-body: #ffffff;
+            --text-muted: #a1a1aa;
+
+            --status-ok: #34d399;
+            --status-warn: #fb7185;
+            --status-note: #fbbf24;
+
+            --font-sans: 'Noto Sans TC', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            border-radius: 0 !important;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        /* 頁首導覽列 */
+        header.nav-bar {
+            background-color: var(--bg-card);
+            border-bottom: 2px solid var(--border-bright);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .logo-symbol {
+            background: var(--purple-accent);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border: 1px solid var(--purple-light);
+            font-size: 1.1rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.15rem;
+            color: var(--text-title);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: block;
+            margin-top: -2px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 1px;
+            background: var(--border-dim);
+            border: 1px solid var(--border-dim);
+        }
+
+        .nav-menu a {
+            display: block;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.45rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: color 0.15s, background-color 0.15s;
+        }
+
+        .nav-menu a:hover {
+            background: var(--bg-elevated);
+            color: var(--purple-light);
+        }
+
+        main.main-wrap {
+            max-width: 1100px;
+            margin: 2rem auto 3rem;
+            padding: 0 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        /* 版面卡片外框 */
+        .section-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-top: 3px solid var(--border-bright);
+            padding: 1.75rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-dim);
+            padding-bottom: 0.75rem;
+        }
+
+        .section-tag {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #ffffff;
+            background: var(--border-bright);
+            padding: 0.15rem 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-title);
+        }
+
+        .section-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        /* 版面 1：INEFFA 指令表 */
+        .cmd-table-container {
+            overflow-x: auto;
+        }
+
+        table.cmd-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        table.cmd-table th {
+            background: var(--bg-elevated);
+            color: var(--purple-light);
+            border: 1px solid var(--border-dim);
+            padding: 0.65rem 0.85rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+
+        table.cmd-table td {
+            border: 1px solid var(--border-dim);
+            padding: 0.65rem 0.85rem;
+            vertical-align: top;
+            background: var(--bg-card);
+        }
+
+        table.cmd-table tr:hover td {
+            background: var(--bg-elevated);
+        }
+
+        .cmd-badge {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--purple-light);
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid var(--border-bright);
+            padding: 0.15rem 0.45rem;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .cmd-alias {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            display: block;
+            margin-top: 0.2rem;
+        }
+
+        code,
+        .cmd-code {
+            font-family: var(--font-mono);
+            color: var(--purple-light);
+            background: var(--bg-terminal);
+            padding: 0.1rem 0.35rem;
+            border: 1px solid var(--border-dim);
+            font-size: 0.82rem;
+        }
+
+        .output-sample {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            color: var(--status-ok);
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+
+        /* 版面 2：使用方式 */
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .usage-col {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-dim);
+            padding: 1.25rem;
+        }
+
+        .step-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--purple-main);
+            margin-bottom: 0.4rem;
+            border-bottom: 1px dashed var(--border-dim);
+            padding-bottom: 0.3rem;
+        }
+
+        .usage-col h3 {
+            font-size: 1rem;
+            color: var(--text-title);
+            margin-bottom: 0.5rem;
+        }
+
+        .usage-col p {
+            font-size: 0.84rem;
+            color: var(--text-body);
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .channel-list {
+            list-style: none;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .channel-item {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid transparent;
+        }
+
+        .channel-item.allow {
+            background: rgba(52, 211, 153, 0.08);
+            border-color: rgba(52, 211, 153, 0.3);
+            color: var(--status-ok);
+        }
+
+        .channel-item.deny {
+            background: rgba(251, 113, 133, 0.08);
+            border-color: rgba(251, 113, 133, 0.3);
+            color: var(--status-warn);
+        }
+
+        /* 終端訊息回覆預覽框 */
+        .terminal-box {
+            background: var(--bg-terminal);
+            border: 1px solid var(--border-bright);
+            padding: 1rem 1.2rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-title);
+            line-height: 1.5;
+        }
+
+        .terminal-bar {
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-dim);
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .term-in {
+            color: var(--purple-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .term-out {
+            color: var(--purple-light);
+            white-space: pre-wrap;
+            background: rgba(168, 85, 247, 0.05);
+            padding: 0.6rem 0.8rem;
+            border-left: 2px solid var(--purple-accent);
+            margin-bottom: 0.75rem;
+        }
+
+        /* 版面 3：注意事項*/
+        .notices-wrap {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        .notice-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-dim);
+            padding: 1.25rem;
+        }
+
+        .notice-item h3 {
+            font-size: 0.95rem;
+            color: var(--text-title);
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notice-item p {
+            font-size: 0.84rem;
+            color: var(--text-body);
+            line-height: 1.5;
+        }
+
+        /* 頂部簡介與節點資訊區塊 */
+        .intro-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .intro-desc {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .intro-desc p {
+            color: var(--text-title);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .intro-meta {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border-dim);
+            border: 1px solid var(--border-dim);
+        }
+
+        .meta-item {
+            background: var(--bg-terminal);
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .meta-label {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--purple-main);
+            letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--purple-light);
+        }
+
+        /* 頁尾 */
+        footer.page-footer {
+            border-top: 1px solid var(--border-dim);
+            background: var(--bg-card);
+            text-align: center;
+            padding: 1.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+        }
+
+        footer.page-footer p+p {
+            margin-top: 0.25rem;
+            font-family: var(--font-mono);
+        }
+
+        /* RWD 響應式調整 */
+        @media (max-width: 820px) {
+
+            .intro-meta,
+            .usage-grid,
+            .notices-wrap {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.3rem;
+            }
+
+            .section-desc {
+                margin-left: 0;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 頂端導航 -->
+    <header class="nav-bar">
+        <div class="nav-inner">
+            <div class="logo-box">
+                <div class="logo-symbol">INF</div>
+                <div class="logo-text">
+                    <h1>INEFFA 指令手冊</h1>
+                </div>
+            </div>
+
+            <ul class="nav-menu">
+                <li><a href="#section-commands">指令表</a></li>
+                <li><a href="#section-usage">使用方式</a></li>
+                <li><a href="#section-notices">注意事項</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main class="main-wrap">
+
+        <!-- 頂部簡介與節點資訊 -->
+        <section class="section-box intro-box">
+            <div class="intro-desc">
+                <p>INEFFA 是一隻台灣 Meshtastic 機器人。</p>
+                <p>提供即時節點數據查詢、氣象查詢等功能。</p>
+                <p>前綴：@inf、@ine、/inf、@ineffa、@!9b8341de</p>
+            </div>
+
+            <div class="intro-meta">
+                <div class="meta-item">
+                    <span class="meta-label">nodeID</span>
+                    <span class="meta-value">!9b8341de</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">shortName</span>
+                    <span class="meta-value">INF</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">longName</span>
+                    <span class="meta-value">INEFFA🧹🤖</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 版面 1：INEFFA 指令表 -->
+        <section id="section-commands" class="section-box">
+            <div class="section-header">
+                <h2 class="section-title">INEFFA 指令表</h2>
+            </div>
+
+            <div class="cmd-table-container">
+                <table class="cmd-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">指令名稱</th>
+                            <th style="width: 32%;">功能說明</th>
+                            <th style="width: 25%;">調用範例</th>
+                            <th style="width: 25%;">回覆預覽</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf</span>
+                                <span class="cmd-alias">別名: @ine, /inf 等前綴</span>
+                            </td>
+                            <td>若僅發送前綴（未帶指令），機器人將自動回覆。</td>
+                            <td><span class="cmd-code">@inf</span><br><span class="cmd-code">@inf 祝通聯順暢</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 您好 XQ10(HSS 星與舫的幽歌)<br>19:05 已收到，為夜增輝，與君遙伴！<br><span
+                                        style="color:var(--text-muted);">（或回覆: 19:05 已收到，祝通聯順暢）</span></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf help</span>
+                                <span class="cmd-alias">別名: ?, 說明</span>
+                            </td>
+                            <td>獲取 INEFFA 內建快速指令表與可用觸發前綴說明。</td>
+                            <td><span class="cmd-code">@inf help</span><br><span class="cmd-code">@ine ?</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 指令表 (@inf / @ine)<br>ai 問AI | wiki 百科<br>eq 地震 |
+                                    weather 天氣<br>time 時間 | stat 狀態<br>node 節點 | loc 位置<br>bot 機器人 | near 附近<br>nodelist
+                                    榜單 | memo 留言板</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf node</span>
+                                <span class="cmd-alias">別名: 查節點, 節點, &lt;4/8位ID&gt;</span>
+                            </td>
+                            <td>查詢節點硬體型號、電量、封包頻率、上線時間與距離（未帶參數查自己）。</td>
+                            <td><span class="cmd-code">@inf node XQ10</span><br><span class="cmd-code">@inf 1a2b</span>
+                            </td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 節點查詢 XQ10<br>HSS 星與舫的幽歌
+                                    (!28eae397)<br>NRF52_PROMICRO_DIY<br>電量 100% | 封包 12.4/h<br>距離您 15.0km<br>最後上線 19:05
+                                    🟢</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf loc</span>
+                                <span class="cmd-alias">別名: location, 位置, 定位</span>
+                            </td>
+                            <td>查詢節點所在的台灣鄉鎮市區、經緯度、海拔高度及距離（未帶參數查自己）。</td>
+                            <td><span class="cmd-code">@inf loc XQ10</span><br><span class="cmd-code">@inf 位置</span>
+                            </td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 位置資訊 XQ10<br>HSS 星與舫的幽歌 (!28eae397)<br>位於
+                                    高雄市內門區<br>22.95, 120.48<br>海拔 410m<br>距離您 15.0km</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf nodelist</span>
+                                <span class="cmd-alias">別名: nodes, 榜單, 節點榜</span>
+                            </td>
+                            <td>統計今日發送封包最多與發送訊息最多的前 3 名節點。</td>
+                            <td><span class="cmd-code">@inf nodelist</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 今日節點榜<br>[封包 TOP]<br>1. 大雪山 (1a2b) 128<br>[訊息
+                                    TOP]<br>2. 小裁雨 (5e6f) 35</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf near</span>
+                                <span class="cmd-alias">別名: 附近, 查附近</span>
+                            </td>
+                            <td>依據發送者的地理座標，查詢最近的活躍節點列表與距離。</td>
+                            <td><span class="cmd-code">@inf near</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 附近節點<br>友台A (3c4d) 3.2km<br>友台B (5e6f) 6.8km</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf weather</span>
+                                <span class="cmd-alias">別名: 天氣, wx</span>
+                            </td>
+                            <td>查詢指定鄉鎮市區天氣預報與降雨機率（未指定則依據節點目前位置）。</td>
+                            <td><span class="cmd-code">@inf weather 大安區</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 臺北市大安區 晴午後短暫雷陣雨。降雨機率 30%。溫度攝氏28至34度。</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf eq</span>
+                                <span class="cmd-alias">別名: 地震, earthquake</span>
+                            </td>
+                            <td>查詢中央氣象署最新發布的台灣有感地震報告。</td>
+                            <td><span class="cmd-code">@inf eq</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 地震列表<br>09/20 花蓮近海 4.8<br>09/20 宜蘭外海 3.6<br>09/19
+                                    臺東外海 4.2</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf time</span>
+                                <span class="cmd-alias">別名: 時間, clock</span>
+                            </td>
+                            <td>向國家標準時間伺服器 NTP 查詢台灣標準時間。</td>
+                            <td><span class="cmd-code">@inf time</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 標準時間<br>2026-09-20 19:15:00</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf ai</span>
+                                <span class="cmd-alias">別名: ask, 問</span>
+                            </td>
+                            <td>調用 AI 簡答。</td>
+                            <td><span class="cmd-code">@inf ai 天線長度公式</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] AI (請注意查證)<br>1/4 波長公式為 75/頻率(MHz)...</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf wiki</span>
+                                <span class="cmd-alias">別名: 百科</span>
+                            </td>
+                            <td>中文維基百科條目摘要快速查詢。</td>
+                            <td><span class="cmd-code">@inf wiki 無線電</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] WIKI<br>無線電是指利用電磁波在空間傳播信號的技術...</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf memo</span>
+                                <span class="cmd-alias">別名: board, 留言板, 留言</span>
+                            </td>
+                            <td>
+                                共用網狀網路留言板，支援全網廣播留言與地理位置關聯：<br>
+                                - <b>查看翻頁</b>：<code>@inf memo [p頁碼]</code> 預設第 1 頁<br>
+                                - <b>發布留言</b>：<code>@inf memo add &lt;內容&gt;</code> 自動署名短名<br>
+                                - <b>附近留言</b>：<code>@inf memo near</code> 查詢 50km 內節點留言<br>
+                                - <b>查單則全文</b>：<code>@inf memo #&lt;ID&gt;</code> 顯示完整內容與時間<br>
+                                - <b>刪除自身</b>：<code>@inf memo rm &lt;ID&gt;</code> 僅限原作者節點刪除<br>
+                                - <b>搜尋節點</b>：<code>@inf memo &lt;節點名&gt;</code> 查特定節點歷史留言
+                            </td>
+                            <td>
+                                <span class="cmd-code">@inf memo</span><br>
+                                <span class="cmd-code">@inf memo add 營地集合</span><br>
+                                <span class="cmd-code">@inf memo near</span><br>
+                                <span class="cmd-code">@inf memo #12</span><br>
+                                <span class="cmd-code">@inf memo rm 12</span>
+                            </td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 留言板共12則<br>#12 INF: 營地集合<br>#11 XQ10 (3.2km):
+                                    訊號良好<br><span style="color:var(--text-muted);">（發布: 留言已發布 #10）</span></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf stat</span>
+                                <span class="cmd-alias">別名: status, ping, 狀態</span>
+                            </td>
+                            <td>INEFFA 的系統運行時間、收錄總節點數量以及 24 小時活躍節點統計。</td>
+                            <td><span class="cmd-code">@inf stat</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 系統狀態<br>運行時間 14:02:15<br>收錄節點 217 個<br>24h活躍 42 個
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf bot</span>
+                                <span class="cmd-alias">別名: bots, 機器人</span>
+                            </td>
+                            <td>列出網狀網路中已知活躍的機器人狀態（如 ARBot、CC 等）。</td>
+                            <td><span class="cmd-code">@inf bot</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] 常見機器人上線狀態<br>🟢 ARBot<br>🟢 CC</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="cmd-badge">@inf mqtt</span>
+                                <span class="cmd-alias">別名: MQTT</span>
+                            </td>
+                            <td>檢查常用 Meshtastic MQTT 伺服器上線狀況。</td>
+                            <td><span class="cmd-code">@inf mqtt</span></td>
+                            <td>
+                                <div class="output-sample">[INEFFA] MQTT 狀態<br>🟢 meshtastic.org<br>🟢
+                                    liamcottle.net</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 版面 2：使用方式 -->
+        <section id="section-usage" class="section-box">
+            <div class="section-header">
+                <h2 class="section-title">使用方式</h2>
+            </div>
+
+            <div class="usage-grid">
+                <!-- 步驟 1 -->
+                <div class="usage-col">
+                    <div class="step-label">STEP 01</div>
+                    <h3>選擇正確頻道</h3>
+                    <p>請使用 SignalTest 頻道，或直接對 INEFFA 發起私訊：</p>
+                    <ul class="channel-list">
+                        <li class="channel-item allow">✅ 私訊 DM (直接對話)</li>
+                        <li class="channel-item deny">❌ 頻道 0 (Primary) 禁行</li>
+                        <li class="channel-item deny">❌ 頻道 1 (MeshTW) 禁行</li>
+                        <li class="channel-item allow">✅ 頻道 2 (SignalTest)</li>
+                        <li class="channel-item deny">❌ 頻道 3 (Emergency!) 禁行</li>
+                    </ul>
+                </div>
+
+                <!-- 步驟 2 -->
+                <div class="usage-col">
+                    <div class="step-label">STEP 02</div>
+                    <h3>發送前綴與指令</h3>
+                    <p>在公開頻道呼叫需加入觸發前綴，在點對點私訊則可不加上前綴：</p>
+                    <p><strong>公開頻道：</strong><br><span class="cmd-code">@inf loc XQ10</span> 或 <span
+                            class="cmd-code">@ine node</span></p>
+                    <p><strong>私訊 (DM)：</strong><br><span class="cmd-code">time</span> 或 <span
+                            class="cmd-code">help</span></p>
+                </div>
+
+                <!-- 步驟 3 -->
+                <div class="usage-col">
+                    <div class="step-label">STEP 03</div>
+                    <h3>接收即時回應</h3>
+                    <p>機器人將在數秒內回傳資料，並支援快捷機制：</p>
+                    <p><strong>預設回覆：</strong><br>發送 <span class="cmd-code">@inf</span> 回覆通聯確認與台詞；發送 <span
+                            class="cmd-code">@inf node</span> 查自身節點。</p>
+                    <p><strong>表情反應：</strong><br>發送 <span class="cmd-code">test</span> 回覆 ✅，發送 <span
+                            class="cmd-code">newbie</span> 回覆 👋。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 版面 3：注意事項 -->
+        <section id="section-notices" class="section-box">
+            <div class="section-header">
+                <h2 class="section-title">注意事項</h2>
+            </div>
+
+            <div class="notices-wrap">
+                <div class="notice-item">
+                    <h3>嚴禁於非測試頻道濫發</h3>
+                    <p>請勿在非測試頻道呼叫機器人。若嘗試呼叫系統會在首次發出警示提醒，隨後將進入靜音模式直接忽略。</p>
+                </div>
+
+                <div class="notice-item">
+                    <h3>冷卻與特定節點保護</h3>
+                    <p>為避免連續使用佔據頻寬，同一發送者連續呼叫設有冷卻保護。<br>請維持至少 5~10 秒間隔，切勿高頻發送相同指令。</p>
+                    <p>設計上已排除其它常見機器人（如 ARBot、MeshAI 天台、番仔園等），並且已直接排除 ID 開頭為 !abcd 的 TWMQTT 虛擬垃圾節點。</p>
+                </div>
+
+                <div class="notice-item">
+                    <h3>訊息長度省略</h3>
+                    <p>若節點長名稱（longName）過長，將自動以省略號（<code>...</code>）精簡以防發送失敗。</p>
+                </div>
+
+                <div class="notice-item">
+                    <h3>重複名稱請改用 8 碼 ID</h3>
+                    <p>當輸入名稱搜尋到多筆節點時，機器人將回覆 <code>[INEFFA] 找到多筆結果，請改用ID查詢</code>。此時請直接輸入該節點的末 4 碼或完整 8 碼 Node ID（例如
+                        <code>@inf 28eae397</code>）即可查詢。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="page-footer">
+        <p>INEFFA - Powered by XQ TEAM, Based on ARBot | 角色概念來自 HoYoverse 原神</p>
+        <p>Special Thanks: fakeTec_pcb, Kent Liu, Meshtastic Taiwan Community</p>
+    </footer>
+
+</body>
+
+</html>
